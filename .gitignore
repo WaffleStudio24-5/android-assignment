@@ -13,3 +13,13 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Assignment 2: instructor answers and private verification artifacts
+/instructor-only/
+/.assignment2-tools/
+/.kotlin/
+/app/src/main/java/com/mca/androidseminar2026/answer/
+/app/src/test/java/com/mca/androidseminar2026/answer/
+/app/src/androidTest/java/com/mca/androidseminar2026/answer/
+/app/src/debug/java/com/mca/androidseminar2026/answer/
+/app/src/debug/AndroidManifest.xml
