@@ -143,11 +143,27 @@ class ShelfLogAssignment(rawCatalog: List<Map<String, String>>) {
         ratingText: String,
         memo: String,
     ): SaveReviewResult {
-        TODO("TODO 4. 평점을 검증하고, 같은 작품의 기록은 갱신하세요.")
+        val rating = ratingText.toIntOrNull()
+
+        if (rating == null || rating !in 1..5) {
+            return SaveReviewResult.Failure
+        }
+
+        val content = contents.find { it.id == contentId }
+            ?: return SaveReviewResult.Failure
+
+        content.review = Review(
+            rating = rating,
+            memo = memo,
+        )
+
+        return SaveReviewResult.Success
     }
 
     /** 모든 작품에서 감상 기록을 지우세요. */
     fun clearReviews() {
-        TODO("TODO 5. 모든 작품에서 감상 기록을 지우세요.")
+        contents.forEach { content ->
+            content.review = null
+        }
     }
 }
