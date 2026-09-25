@@ -77,8 +77,64 @@ class ShelfLogAssignment(rawCatalog: List<Map<String, String>>) {
 
     /** 검색 결과를 ContentListItemUiModel로 변환해 반환하세요. */
     fun search(query: String): List<ContentListItemUiModel> {
-        // TODO 3. 빈 검색어일 경우엔 ContentListItemUiModel로 변환된 Catalog 전체를, 그 외에는 제목/저자 or 감독에 해당 query가 들어간 것들에 대해 결과를 반환하세요.
-        return emptyList()
+        return contents
+            .filter { content ->
+                if (query.isEmpty()) {
+                    true
+                } else {
+                    when (content) {
+                        is Content.Book ->
+                            content.title.contains(query, ignoreCase = true) ||
+                                    content.author.contains(query, ignoreCase = true)
+
+                        is Content.Movie ->
+                            content.title.contains(query, ignoreCase = true) ||
+                                    content.director.contains(query, ignoreCase = true)
+                    }
+                }
+            }
+            .sortedBy { it.id }
+            .map { content ->
+                when (content) {
+                    is Content.Book -> {
+                        ContentListItemUiModel(
+                            id = content.id,
+                            typeLabel = "책",
+                            title = content.title,
+                            creator = content.author,
+                            year = content.year,
+                            pageCount = content.pageCount,
+                            runningTimeMinutes = null,
+                            reviewSummary = content.review?.let {
+                                if (it.memo.isEmpty()) {
+                                    "평점: ${it.rating}"
+                                } else {
+                                    "평점: ${it.rating} / ${it.memo}"
+                                }
+                            } ?: "",
+                        )
+                    }
+
+                    is Content.Movie -> {
+                        ContentListItemUiModel(
+                            id = content.id,
+                            typeLabel = "영화",
+                            title = content.title,
+                            creator = content.director,
+                            year = content.year,
+                            pageCount = null,
+                            runningTimeMinutes = content.runningTimeMinutes,
+                            reviewSummary = content.review?.let {
+                                if (it.memo.isEmpty()) {
+                                    "평점: ${it.rating}"
+                                } else {
+                                    "평점: ${it.rating} / ${it.memo}"
+                                }
+                            } ?: "",
+                        )
+                    }
+                }
+            }
     }
 
     /** 입력을 검증하고 감상 기록을 추가하거나 기존 기록을 갱신하세요. */
