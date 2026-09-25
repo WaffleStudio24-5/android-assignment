@@ -11,18 +11,62 @@ import com.mca.androidseminar2026.model.ContentListItemUiModel
  * search, saveReview, clearReviews 함수의 형태를 수정할 때에는 해당 함수를 호출하는 곳도 함께 수정하세요.
  */
 class ShelfLogAssignment(rawCatalog: List<Map<String, String>>) {
+    private sealed class Content {
+        abstract val id: Int
+        abstract val title: String
+        abstract val year: String
+        abstract var review: Review?
+
+        data class Book(
+            override val id: Int,
+            override val title: String,
+            override val year: String,
+            val author: String,
+            val pageCount: Int,
+            override var review: Review? = null,
+        ) : Content()
+
+        data class Movie(
+            override val id: Int,
+            override val title: String,
+            override val year: String,
+            val director: String,
+            val runningTimeMinutes: Int,
+            override var review: Review? = null,
+        ) : Content()
+    }
+
+    private data class Review(
+        val rating: Int,
+        val memo: String,
+    )
 
     // TODO 1. 원시 데이터인 rawCatalog를 앱에서 사용할 작품 목록으로 변환해 프로퍼티로 보관하세요.
     // TODO 3~5의 검색, 저장, 전체 삭제 함수가 이 프로퍼티를 사용할 수 있어야 합니다.
     // 클래스를 새로 정의해서 사용해 주세요.
     // 단, 정의하신 클래스의 id는 반드시 Int 타입으로 해 주세요.
     //
-    // 예:
-    // private val contents: MutableList<???>
-    //
-    // init {
-    //     contents = rawCatalog.map { ... }
-    // }
+    private val contents: List<Content> = rawCatalog.map { raw ->
+        when (raw["kind"]) {
+            "book" -> Content.Book(
+                id = raw["id"]!!.toInt(),
+                title = raw["title"]!!,
+                year = raw["year"]!!,
+                author = raw["author"]!!,
+                pageCount = raw["pageCount"]!!.toInt(),
+            )
+
+            "movie" -> Content.Movie(
+                id = raw["id"]!!.toInt(),
+                title = raw["title"]!!,
+                year = raw["year"]!!,
+                director = raw["director"]!!,
+                runningTimeMinutes = raw["runningTimeMinutes"]!!.toInt(),
+            )
+
+            else -> error("Unknown content kind")
+        }
+    }
 
     // TODO 2. 작품별 감상 기록을 저장하는 방식을 결정하세요.
     // 각 기록에는 평점과 메모가 필요합니다.
