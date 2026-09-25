@@ -23,6 +23,59 @@ class ShelfLogAssignment(rawCatalog: List<Map<String, String>>) {
     // init {
     //     contents = rawCatalog.map { ... }
     // }
+    private sealed interface Content {
+        val id: Int
+        val title: String
+        val year: String
+        val creator: String
+    }
+
+    private data class Book(
+        override val id: Int,
+        override val title: String,
+        val author: String,
+        override val year: String,
+        val pageCount: Int,
+    ) : Content {
+        override val creator: String = author
+    }
+
+    private data class Movie(
+        override val id: Int,
+        override val title: String,
+        val director: String,
+        override val year: String,
+        val runningTimeMinutes: Int,
+    ) : Content {
+        override val creator: String = director
+    }
+
+    private data class Review(
+        val rating: Int,
+        val memo: String,
+    )
+
+    private val contents: List<Content> = rawCatalog.map { raw ->
+        when (raw.getValue("kind")) {
+            "book" -> Book(
+                id = raw.getValue("id").toInt(),
+                title = raw.getValue("title"),
+                author = raw.getValue("author"),
+                year = raw.getValue("year"),
+                pageCount = raw.getValue("pageCount").toInt(),
+            )
+
+            else -> Movie(
+                id = raw.getValue("id").toInt(),
+                title = raw.getValue("title"),
+                director = raw.getValue("director"),
+                year = raw.getValue("year"),
+                runningTimeMinutes = raw.getValue("runningTimeMinutes").toInt(),
+            )
+        }
+    }
+
+    private val reviews = mutableMapOf<Int, Review>()
 
     // TODO 2. 작품별 감상 기록을 저장하는 방식을 결정하세요.
     // 각 기록에는 평점과 메모가 필요합니다.
@@ -34,8 +87,32 @@ class ShelfLogAssignment(rawCatalog: List<Map<String, String>>) {
     /** 검색 결과를 ContentListItemUiModel로 변환해 반환하세요. */
     fun search(query: String): List<ContentListItemUiModel> {
         // TODO 3. 빈 검색어일 경우엔 ContentListItemUiModel로 변환된 Catalog 전체를, 그 외에는 제목/저자 or 감독에 해당 query가 들어간 것들에 대해 결과를 반환하세요.
-        return emptyList()
+        return contents
+            .filter { content ->
+                query.isEmpty() ||
+                        content.title.contains(query, ignoreCase = true) ||
+                        content.creator.contains(query, ignoreCase = true)
+            }
+            .sortedBy { it.id }
+            .map { content ->
+                val review = reviews[content.id]
+
+                ContentListItemUiModel(
+                    id = content.id,
+                    typeLabel = if (content is Book) "책" else "영화",
+                    title = content.title,
+                    creator = content.creator,
+                    year = content.year,
+                    pageCount = (content as? Book)?.pageCount,
+                    runningTimeMinutes = (content as? Movie)?.runningTimeMinutes,
+                    reviewSummary = review?.let {
+                        if (it.memo.isBlank()) "평점 ${it.rating}/5"
+                        else "평점 ${it.rating}/5 · ${it.memo}"
+                    }.orEmpty(),
+                )
+            }
     }
+
 
     /** 입력을 검증하고 감상 기록을 추가하거나 기존 기록을 갱신하세요. */
     fun saveReview(
@@ -43,11 +120,18 @@ class ShelfLogAssignment(rawCatalog: List<Map<String, String>>) {
         ratingText: String,
         memo: String,
     ): SaveReviewResult {
-        TODO("TODO 4. 평점을 검증하고, 같은 작품의 기록은 갱신하세요.")
+        val rating = ratingText.toIntOrNull()
+
+        if (rating == null || rating !in 1..5 || contents.none { it.id == contentId }) {
+            return SaveReviewResult.Failure
+        }
+
+        reviews[contentId] = Review(rating, memo)
+        return SaveReviewResult.Success
     }
 
     /** 모든 작품에서 감상 기록을 지우세요. */
     fun clearReviews() {
-        TODO("TODO 5. 모든 작품에서 감상 기록을 지우세요.")
+        reviews.clear()
     }
 }
