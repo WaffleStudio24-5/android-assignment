@@ -15,4 +15,6 @@
 
 이 과제 패키지가 제공하는 위 6개 이미지 소스에 관하여, 적용 가능한 권리의 범위에서 누구나 무료로 사용, 복제, 수정, 통합, 배포, 재허락 및 판매할 수 있습니다. 수정 여부와 상관없이 이 출처 및 허락 문서를 함께 배포해 주세요. 이미지에는 어떠한 보증도 제공하지 않습니다. 제3자의 상표권 등 별도 권리에 대한 허락을 뜻하지 않습니다.
 
-학생은 별도 검색, 다운로드, 계정 등록, API 키 설정 없이 `MenuItem.imageResId`를 `painterResource`로 읽어 `Image`에 전달하면 됩니다. XML 벡터도 Android의 로컬 drawable 이미지 리소스입니다. 앱 실행 중 네트워크 요청은 필요하지 않습니다.
+`MenuItem.imageResId`를 `painterResource`로 읽어 `Image`에 전달하면 됩니다. 
+
+가게 소개의 `RestaurantData.imageResId`도 위 `menu_burger.xml`을 대표 이미지로 사용합니다.

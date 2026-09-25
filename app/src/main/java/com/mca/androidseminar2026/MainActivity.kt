@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
                 // Assignment2Starter 내부에서 화면과 ViewModel을 연결하세요.
                 Assignment2Starter()
 
-                // 교수자용 로컬 답안 연결: 위 호출 대신 아래 호출을 사용합니다.
+                // 제 로컬 환경에 저장된 정답 코드입니다. 신경쓰실 필요 없습니다.
                 // com.mca.androidseminar2026.answer.ui.FoodOrderApp()
             }
         }

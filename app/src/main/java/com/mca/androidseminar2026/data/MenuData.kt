@@ -7,7 +7,7 @@ enum class MenuCategory(val label: String) {
     MAIN("메인"), SIDE("사이드"), DRINK("음료"),
 }
 
-/** 가격은 원 단위 정수입니다. 찜 여부나 수량을 이 기준 데이터에 추가해 변경하지 마세요. */
+/** 가격은 원 단위 정수입니다. 수량을 이 기준 데이터에 추가해 변경하지 마세요. */
 data class MenuItem(
     val id: Int,
     val name: String,
@@ -18,8 +18,6 @@ data class MenuItem(
 )
 
 object MenuData {
-    const val restaurantName = "한끼 테이블"
-
     val items: List<MenuItem> = listOf(
         MenuItem(1, "클래식 버거", MenuCategory.MAIN, 6500, R.drawable.menu_burger,
             "도톰한 패티에 치즈와 아삭한 채소를 더했어요. 부드러운 번과 특제 소스가 어우러지는 든든한 한 끼입니다."),
