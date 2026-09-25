@@ -35,7 +35,7 @@ object ContextPractice {
         // Dialog는 현재 Activity의 화면에 표시되어야 하므로 activityContext를 사용합니다.
         AlertDialog.Builder(activityContext)
             .setTitle("전체 기록 삭제")
-            .setMessage("모든 감상 기록을 삭제하시겠습니까?")
+            .setMessage("모든 기록을 삭제하시겠습니까?")
             .setNegativeButton("취소", null)
             .setPositiveButton("삭제") { _, _ ->
                 onConfirmed()
