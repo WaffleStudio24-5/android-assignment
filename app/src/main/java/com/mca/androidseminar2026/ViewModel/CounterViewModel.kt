@@ -8,7 +8,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class CounterViewModel : ViewModel() {
-    // 상태 수정은 ViewModel 안에서만, UI에는 읽기 전용으로 공개합니다.
+    // 교재에 있는 예시 코드보다 조금 더 복잡하죠?
+    // 이게 굉장히 표준적인 구조이고, 이렇게 짠 이유가 있습니다.
+    // 이 역시 고민해보거나, GPT에게 물어보면 좋을 거 같아요.
+    // 교재처럼 flow를 MutableStateFlow로 하나만 짜고, 그걸 UI에 그대로 공개하면
+    // 생길 수 있는 문제점에 대해 생각해보면 좋은 힌트가 될 것입니다.
     private val _uiState = MutableStateFlow(CounterUiState())
     val uiState: StateFlow<CounterUiState> = _uiState.asStateFlow()
 
