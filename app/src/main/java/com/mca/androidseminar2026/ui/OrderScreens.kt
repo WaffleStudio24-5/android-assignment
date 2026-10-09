@@ -45,6 +45,12 @@ import com.mca.androidseminar2026.data.RestaurantData
 import com.mca.androidseminar2026.model.OrderTab
 import com.mca.androidseminar2026.uistate.CartUiState
 import kotlinx.coroutines.delay
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.Button
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 
 
 // 상태와 이벤트 연결은 CounterExample.kt의 실행 예제를 참고하세요.
@@ -251,19 +257,140 @@ fun MenuScreen(
 }
 
 
-@Composable
-fun CartScreen() {
-    // TODO: 같은 MenuItemRow로 수량이 1 이상인 메뉴를 표시하세요.
-    // 수량 변경을 연결하고, 수량이 0이면 목록에서 제거하세요.
-    // 전체 비우기와 빈 목록 안내를 구현하세요.
-    // 전체 수량·총가격 텍스트 대신 Bottom Bar 위에 CheckoutButton을 고정하세요.
-    // 클릭 시 현재 금액의 결제 완료 Toast만 표시하고 장바구니는 유지하세요.
-}
 
 @Composable
-fun CheckoutButton(totalPrice: Long, enabled: Boolean, onClick: () -> Unit) {
-    // TODO: "총 금액 : nnnn원" 버튼을 구현하세요. 빈 장바구니에서는 비활성화하세요.
+fun CartScreen(
+    cartUiState: CartUiState,
+    onIncrease: (Int) -> Unit,
+    onDecrease: (Int) -> Unit,
+    onClearCart: () -> Unit,
+) {
+    val context = LocalContext.current
+
+    val cartItems = MenuData.items.filter { menu ->
+        cartUiState.quantityOf(menu.id) > 0
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 24.dp)
+        ) {
+            Text(
+                text = "장바구니",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "담은 메뉴와 금액을 확인하세요.",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            OutlinedButton(
+                onClick = onClearCart,
+                enabled = cartItems.isNotEmpty(),
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(
+                    1.dp,
+                    Color(0xFFB2B4C1)
+                ),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color(0xFF555966)
+                )
+            ) {
+                Text("전체 비우기")
+            }
+        }
+
+        if (cartItems.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "장바구니가 비어 있습니다.",
+                    color = Color.Gray,
+                    fontSize = 16.sp
+                )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                items(
+                    items = cartItems,
+                    key = { it.id }
+                ) { menu ->
+                    MenuItemRow(
+                        menu = menu,
+                        quantity = cartUiState.quantityOf(menu.id),
+                        onIncrease = { onIncrease(menu.id) },
+                        onDecrease = { onDecrease(menu.id) }
+                    )
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFFFAF9FD))
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            CheckoutButton(
+                totalPrice = cartUiState.totalPrice,
+                enabled = cartItems.isNotEmpty(),
+                onClick = {
+                    Toast.makeText(
+                        context,
+                        "%,d원 결제 완료!".format(cartUiState.totalPrice),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            )
+        }
+    }
 }
+
+
+
+@Composable
+fun CheckoutButton(
+    totalPrice: Long,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF50618E),
+            disabledContainerColor = Color(0xFFB8BED2)
+        )
+    ) {
+        Text(
+            text = "총 금액 : %,d원".format(totalPrice),
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
 
 @Composable
 fun BottomBar(
