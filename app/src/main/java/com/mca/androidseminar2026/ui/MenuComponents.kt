@@ -1,21 +1,117 @@
+
 package com.mca.androidseminar2026.ui
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mca.androidseminar2026.data.MenuItem
 
-// 메뉴·장바구니에서 같은 함수를 호출하세요. ViewModel 구조는 직접 설계하세요.
-// 상태와 콜백을 받는 UI의 예시는 CounterExample.kt를 참고하세요.
 @Composable
 fun MenuItemRow(
-    // 예시 파라미터로, 수정이나 추가하셔도 됩니다.
     menu: MenuItem,
     quantity: Int,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
 ) {
-    // TODO: 왼쪽에 이름·설명·가격, 오른쪽에 둥근 정사각형 이미지를 배치하세요.
-    // 설명은 두 줄 이후 말줄임 처리하고 항목 사이에 여백과 구분선을 두세요.
-    // 아래쪽 오른편에 QuantitySelector를 배치하세요. 배치는 주어진 예시 이미지를 참고하세요.
+    Column {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = menu.name,
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = menu.description,
+                        fontSize = 14.sp,
+                        lineHeight = 22.sp,
+                        color = Color.Gray,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "%,d원".format(menu.price),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Image(
+                    painter = painterResource(menu.imageResId),
+                    contentDescription = menu.name,
+                    modifier = Modifier
+                        .size(112.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                QuantitySelector(
+                    quantity = quantity,
+                    onIncrease = onIncrease,
+                    onDecrease = onDecrease
+                )
+            }
+        }
+
+        HorizontalDivider(
+            color = Color(0xFFEEEEEE)
+        )
+    }
 }
 
 @Composable
@@ -24,6 +120,69 @@ fun QuantitySelector(
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
 ) {
-    // TODO: 0이면 담기 버튼, 1 이상이면 "−  n개  +" 조작부를 표시하세요.
-    // 두 상태의 영역 크기를 유지하고, 이벤트는 전달받은 콜백으로 처리하세요.
+    Box(
+        modifier = Modifier
+            .width(164.dp)
+            .height(48.dp)
+    ) {
+        if (quantity == 0) {
+            Button(
+                onClick = onIncrease,
+                modifier = Modifier.fillMaxSize(),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF202124)
+                )
+            ) {
+                Text("담기")
+            }
+        } else {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                border = BorderStroke(
+                    1.dp,
+                    Color(0xFFE0E0E0)
+                )
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(
+                        onClick = onDecrease,
+                        modifier = Modifier
+                            .width(48.dp)
+                            .fillMaxHeight()
+                    ) {
+                        Text(
+                            text = "−",
+                            fontSize = 24.sp
+                        )
+                    }
+
+                    Text(
+                        text = "${quantity}개",
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    IconButton(
+                        onClick = onIncrease,
+                        modifier = Modifier
+                            .width(48.dp)
+                            .fillMaxHeight()
+                    ) {
+                        Text(
+                            text = "+",
+                            fontSize = 24.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
