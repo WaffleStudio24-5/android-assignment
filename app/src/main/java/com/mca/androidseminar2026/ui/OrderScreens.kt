@@ -51,6 +51,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Button
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.size
 
 
 // 상태와 이벤트 연결은 CounterExample.kt의 실행 예제를 참고하세요.
@@ -392,12 +397,72 @@ fun CheckoutButton(
 }
 
 
+
 @Composable
 fun BottomBar(
     selectedTab: OrderTab,
     totalQuantity: Int,
     onTabSelected: (OrderTab) -> Unit,
 ) {
-    // TODO: 세 탭과 선택 상태, 장바구니 전체 수량을 표시하세요.
-    // 탭을 누르면 onTabSelected에 해당 OrderTab을 전달하세요.
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFFEEEFF7))
+            .navigationBarsPadding()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            OrderTab.entries.forEach { tab ->
+                val selected = selectedTab == tab
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clickable { onTabSelected(tab) },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(width = 52.dp, height = 40.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(
+                                if (selected) Color(0xFFDDE3FA)
+                                else Color.Transparent
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = when (tab) {
+                                OrderTab.RESTAURANT -> "⌂"
+                                OrderTab.MENU -> "≡"
+                                OrderTab.CART -> totalQuantity.toString()
+                            },
+                            fontSize = 22.sp,
+                            color = Color(0xFF555966)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = tab.label,
+                        fontSize = 13.sp,
+                        fontWeight = if (selected) {
+                            FontWeight.Bold
+                        } else {
+                            FontWeight.Normal
+                        },
+                        color = Color(0xFF555966)
+                    )
+                }
+            }
+        }
+    }
 }
+
