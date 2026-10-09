@@ -1,9 +1,15 @@
-package com.mca.androidseminar2026.ui
 
+package com.mca.androidseminar2026.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,12 +17,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -25,8 +39,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mca.androidseminar2026.data.MenuCategory
+import com.mca.androidseminar2026.data.MenuData
 import com.mca.androidseminar2026.data.RestaurantData
 import com.mca.androidseminar2026.model.OrderTab
+import com.mca.androidseminar2026.uistate.CartUiState
+import kotlinx.coroutines.delay
 
 
 // 상태와 이벤트 연결은 CounterExample.kt의 실행 예제를 참고하세요.
@@ -107,12 +125,131 @@ fun RestaurantScreen(
 }
 
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MenuScreen() {
-    // TODO: 음식점 이름, 카테고리 선택과 MenuItemRow 목록을 배치하세요.
-    // 목록 맨 위에서 당겨 새로고침하면 0.5초간 진행 표시를 보여 주세요.
-    // 실제 데이터 변경 없이 기존 상태를 유지하고 중복 새로고침은 막으세요.
+fun MenuScreen(
+    selectedCategory: MenuCategory?,
+    cartUiState: CartUiState,
+    onCategorySelected: (MenuCategory?) -> Unit,
+    onIncrease: (Int) -> Unit,
+    onDecrease: (Int) -> Unit,
+) {
+    var isRefreshing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            delay(500L)
+            isRefreshing = false
+        }
+    }
+
+    val filteredMenus = MenuData.items.filter { menu ->
+        selectedCategory == null || menu.category == selectedCategory
+    }
+
+    val categories = listOf(
+        null to "전체",
+        MenuCategory.MAIN to "메인",
+        MenuCategory.SIDE to "사이드",
+        MenuCategory.DRINK to "음료"
+    )
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp, bottom = 8.dp)
+        ) {
+            Text(
+                text = "한끼 테이블",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "오늘 먹고 싶은 메뉴를 골라 보세요.",
+                fontSize = 16.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                categories.forEach { (category, label) ->
+                    val selected = selectedCategory == category
+
+                    OutlinedButton(
+                        onClick = { onCategorySelected(category) },
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(
+                            1.dp,
+                            if (selected) Color.Transparent
+                            else Color(0xFFB2B4C1)
+                        ),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = if (selected) {
+                                Color(0xFFDDE3FA)
+                            } else {
+                                Color.White
+                            }
+                        ),
+                        contentPadding = PaddingValues(
+                            horizontal = 16.dp,
+                            vertical = 8.dp
+                        )
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF555966)
+                        )
+                    }
+                }
+            }
+        }
+
+        HorizontalDivider(color = Color(0xFFEEEEEE))
+
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                if (!isRefreshing) {
+                    isRefreshing = true
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(
+                    items = filteredMenus,
+                    key = { it.id }
+                ) { menu ->
+                    MenuItemRow(
+                        menu = menu,
+                        quantity = cartUiState.quantityOf(menu.id),
+                        onIncrease = { onIncrease(menu.id) },
+                        onDecrease = { onDecrease(menu.id) }
+                    )
+                }
+            }
+        }
+    }
 }
+
 
 @Composable
 fun CartScreen() {
