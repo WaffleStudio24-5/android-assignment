@@ -1,7 +1,52 @@
 package com.mca.androidseminar2026.ui
 
+import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.mca.androidseminar2026.data.MenuCategory
+import com.mca.androidseminar2026.data.MenuData
+import com.mca.androidseminar2026.data.RestaurantData
 import com.mca.androidseminar2026.model.OrderTab
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // 상태와 이벤트 연결은 CounterExample.kt의 실행 예제를 참고하세요.
 // 각 화면에 필요한 상태·콜백과 사용할 ViewModel은 직접 설계하세요.
@@ -9,30 +54,106 @@ import com.mca.androidseminar2026.model.OrderTab
 // 예시 파일 구조입니다. 한 파일에 여러 함수를 모두 저장할 필요는 없습니다.
 
 @Composable
-fun RestaurantScreen() {
-    // TODO: RestaurantData의 이름·대표 이미지·소개와 가게 찜 버튼을 표시하세요.
-    // 찜 여부를 구분하고, 탭 전환과 화면 회전 후에도 상태를 유지하세요.
+fun RestaurantScreen(isFavorite: Boolean, onFavoriteClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Image(
+            painter = painterResource(RestaurantData.imageResId),
+            contentDescription = RestaurantData.name,
+            modifier = Modifier.fillMaxWidth().height(220.dp).clip(RoundedCornerShape(24.dp)),
+            contentScale = ContentScale.Crop,
+        )
+        Text(RestaurantData.name, style = MaterialTheme.typography.headlineMedium)
+        Text(RestaurantData.description, style = MaterialTheme.typography.bodyLarge)
+        Button(onClick = onFavoriteClick) {
+            Text(if (isFavorite) "♥ 찜 해제" else "♡ 가게 찜")
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MenuScreen(
+    selectedCategory: MenuCategory?,
+    quantities: Map<Int, Int>,
+    onCategorySelected: (MenuCategory?) -> Unit,
+    onIncrease: (Int) -> Unit,
+    onDecrease: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var isRefreshing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val menus = MenuData.items.filter { selectedCategory == null || it.category == selectedCategory }
+
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            if (!isRefreshing) scope.launch {
+                isRefreshing = true
+                delay(500)
+                isRefreshing = false
+            }
+        },
+        modifier = modifier,
+    ) {
+        LazyColumn(contentPadding = PaddingValues(20.dp)) {
+            item { Text(RestaurantData.name, style = MaterialTheme.typography.headlineSmall) }
+            item { Spacer(Modifier.height(12.dp)) }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CategoryButton("전체", selectedCategory == null) { onCategorySelected(null) }
+                    MenuCategory.entries.forEach { category ->
+                        CategoryButton(category.label, selectedCategory == category) { onCategorySelected(category) }
+                    }
+                }
+            }
+            item { Spacer(Modifier.height(8.dp)) }
+            items(menus, key = { it.id }) { menu ->
+                MenuItemRow(menu, quantities[menu.id] ?: 0, { onIncrease(menu.id) }, { onDecrease(menu.id) })
+            }
+        }
+    }
 }
 
 @Composable
-fun MenuScreen() {
-    // TODO: 음식점 이름, 카테고리 선택과 MenuItemRow 목록을 배치하세요.
-    // 목록 맨 위에서 당겨 새로고침하면 0.5초간 진행 표시를 보여 주세요.
-    // 실제 데이터 변경 없이 기존 상태를 유지하고 중복 새로고침은 막으세요.
-}
+fun CartScreen(
+    quantities: Map<Int, Int>,
+    onIncrease: (Int) -> Unit,
+    onDecrease: (Int) -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val cartMenus = MenuData.items.filter { (quantities[it.id] ?: 0) > 0 }
+    val totalPrice = cartMenus.sumOf { it.price.toLong() * (quantities[it.id] ?: 0) }
 
-@Composable
-fun CartScreen() {
-    // TODO: 같은 MenuItemRow로 수량이 1 이상인 메뉴를 표시하세요.
-    // 수량 변경을 연결하고, 수량이 0이면 목록에서 제거하세요.
-    // 전체 비우기와 빈 목록 안내를 구현하세요.
-    // 전체 수량·총가격 텍스트 대신 Bottom Bar 위에 CheckoutButton을 고정하세요.
-    // 클릭 시 현재 금액의 결제 완료 Toast만 표시하고 장바구니는 유지하세요.
+    Column(modifier.padding(horizontal = 20.dp)) {
+        Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("장바구니", style = MaterialTheme.typography.headlineSmall)
+            OutlinedButton(onClick = onClear, enabled = cartMenus.isNotEmpty()) { Text("전체 비우기") }
+        }
+        if (cartMenus.isEmpty()) {
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text("장바구니가 비어 있어요.")
+            }
+        } else {
+            LazyColumn(Modifier.weight(1f)) {
+                items(cartMenus, key = { it.id }) { menu ->
+                    MenuItemRow(menu, quantities[menu.id] ?: 0, { onIncrease(menu.id) }, { onDecrease(menu.id) })
+                }
+            }
+        }
+        CheckoutButton(totalPrice, cartMenus.isNotEmpty()) {
+            Toast.makeText(context, "${totalPrice}원 결제 완료!", Toast.LENGTH_SHORT).show()
+        }
+        Spacer(Modifier.height(12.dp))
+    }
 }
 
 @Composable
 fun CheckoutButton(totalPrice: Long, enabled: Boolean, onClick: () -> Unit) {
-    // TODO: "총 금액 : nnnn원" 버튼을 구현하세요. 빈 장바구니에서는 비활성화하세요.
+    Button(onClick = onClick, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
+        Text("총 금액 : ${totalPrice}원")
+    }
 }
 
 @Composable
@@ -41,6 +162,21 @@ fun BottomBar(
     totalQuantity: Int,
     onTabSelected: (OrderTab) -> Unit,
 ) {
-    // TODO: 세 탭과 선택 상태, 장바구니 전체 수량을 표시하세요.
-    // 탭을 누르면 onTabSelected에 해당 OrderTab을 전달하세요.
+    NavigationBar {
+        OrderTab.entries.forEach { tab ->
+            val label = if (tab == OrderTab.CART && totalQuantity > 0) "${tab.label} (${totalQuantity})" else tab.label
+            NavigationBarItem(
+                selected = selectedTab == tab,
+                onClick = { onTabSelected(tab) },
+                icon = { Text(if (tab == OrderTab.RESTAURANT) "⌂" else if (tab == OrderTab.MENU) "☰" else "🛒") },
+                label = { Text(label) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun CategoryButton(label: String, selected: Boolean, onClick: () -> Unit) {
+    if (selected) Button(onClick = onClick) { Text(label) }
+    else OutlinedButton(onClick = onClick) { Text(label) }
 }
