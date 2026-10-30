@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.mca.androidseminar2026.ViewModel.BrowseViewModel
+import com.mca.androidseminar2026.ViewModel.BudgetViewModel
 import com.mca.androidseminar2026.ViewModel.CombinationViewModel
 import com.mca.androidseminar2026.ViewModel.OrderViewModel
 import com.mca.androidseminar2026.model.OrderTab
@@ -26,6 +27,7 @@ private object Destination {
     const val MENU = "menu"
     const val CART = "cart"
     const val COMBINATIONS = "combinations"
+    const val BUDGET = "budget"
 }
 
 private fun OrderTab.route(): String = when (this) {
@@ -41,9 +43,11 @@ fun Assignment3Root() {
     val orderViewModel: OrderViewModel = hiltViewModel()
     val browseViewModel: BrowseViewModel = hiltViewModel()
     val combinationViewModel: CombinationViewModel = hiltViewModel()
+    val budgetViewModel: BudgetViewModel = hiltViewModel()
     val order by orderViewModel.uiState.collectAsStateWithLifecycle()
     val browse by browseViewModel.uiState.collectAsStateWithLifecycle()
     val combinations by combinationViewModel.uiState.collectAsStateWithLifecycle()
+    val budget by budgetViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -94,11 +98,24 @@ fun Assignment3Root() {
                     },
                     onNavigateToCombinations = { navController.navigate(Destination.COMBINATIONS) },
                     onShowSaveDialog = orderViewModel::showSaveDialog,
+                    budgetAmount = budget.amount,
+                    onNavigateToBudget = { navController.navigate(Destination.BUDGET) },
                 )
             }
             composable(Destination.COMBINATIONS) {
                 CombinationScreen(
                     state = combinations,
+                    onBack = { navController.popBackStack() },
+                    onAddToCart = orderViewModel::addCombination,
+                    onRequestDelete = combinationViewModel::requestDelete,
+                    onCancelDelete = combinationViewModel::cancelDelete,
+                    onConfirmDelete = combinationViewModel::confirmDelete,
+                )
+            }
+            composable(Destination.BUDGET) {
+                BudgetScreen(
+                    currentBudget = budget.amount,
+                    onSave = budgetViewModel::save,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -108,7 +125,9 @@ fun Assignment3Root() {
                 errorMessage = order.saveErrorMessage,
                 onDismiss = orderViewModel::hideSaveDialog,
                 onSave = { name ->
-                    // TODO: 조합 이름과 order.quantities를 저장하고 성공할 때만 Dialog를 닫으세요.
+                    combinationViewModel.save(name, order.quantities) { error ->
+                        if (error == null) orderViewModel.hideSaveDialog() else orderViewModel.showSaveError(error)
+                    }
                 },
             )
         }
