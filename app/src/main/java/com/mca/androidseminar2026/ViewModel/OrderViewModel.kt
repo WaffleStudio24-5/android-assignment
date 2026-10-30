@@ -41,7 +41,20 @@ class OrderViewModel @Inject constructor() : ViewModel() {
         _uiState.update { it.copy(isSaveDialogOpen = false, saveErrorMessage = null) }
     }
 
-    /** TODO: 장바구니에 사용자 설정 조합을 추가하는 함수 */
+    fun showSaveError(message: String) {
+        _uiState.update { it.copy(saveErrorMessage = message) }
+    }
 
+    fun addCombination(quantities: Map<Int, Int>) {
+        _uiState.update { current ->
+            val next = current.quantities.toMutableMap()
+            quantities.forEach { (menuId, quantity) ->
+                if (MenuData.items.any { it.id == menuId } && quantity > 0) {
+                    next[menuId] = current.quantityOf(menuId) + quantity
+                }
+            }
+            current.copy(quantities = next)
+        }
+    }
 
 }
