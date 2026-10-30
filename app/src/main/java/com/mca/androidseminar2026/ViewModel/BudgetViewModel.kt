@@ -20,7 +20,7 @@ private val budgetAmountKey = longPreferencesKey("amount")
 
 @HiltViewModel
 class BudgetViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
 ) : ViewModel() {
     val uiState = context.budgetDataStore.data.map { preferences ->
         BudgetUiState(amount = preferences[budgetAmountKey])
