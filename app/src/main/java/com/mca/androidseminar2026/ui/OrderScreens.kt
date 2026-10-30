@@ -121,6 +121,8 @@ fun CartScreen(
     modifier: Modifier = Modifier,
     onNavigateToCombinations: () -> Unit,
     onShowSaveDialog: () -> Unit,
+    budgetAmount: Long?,
+    onNavigateToBudget: () -> Unit,
 ) {
     Column(modifier.fillMaxSize()) {
         LazyColumn(Modifier.weight(1f)) {
@@ -134,7 +136,12 @@ fun CartScreen(
                             Text("조합 저장")
                         }
                         OutlinedButton(onClick = onNavigateToCombinations) { Text("저장한 조합") }
+                        OutlinedButton(onClick = onNavigateToBudget) { Text("예산 설정") }
                     }
+                    budgetAmount?.let { budget ->
+                        val difference = budget - order.totalPrice
+                        Text(if (difference >= 0) "남은 예산: ${NumberFormat.getNumberInstance(Locale.KOREA).format(difference)}원" else "예산 초과: ${NumberFormat.getNumberInstance(Locale.KOREA).format(-difference)}원")
+                    } ?: Text("예산을 설정하면 장바구니 금액과 비교할 수 있어요.")
                 }
             }
             if (order.cartItems.isEmpty()) {

@@ -2,6 +2,8 @@ package com.mca.androidseminar2026.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.mca.androidseminar2026.data.local.CombinationDao
 import com.mca.androidseminar2026.data.local.CombinationDatabase
 import dagger.Module
@@ -19,6 +21,11 @@ object StorageModule {
     @Singleton
     fun provideCombinationDatabase(@ApplicationContext context: Context): CombinationDatabase =
         Room.databaseBuilder(context, CombinationDatabase::class.java, "saved-combinations.db")
+            .addMigrations(object : Migration(1, 2) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE saved_combinations ADD COLUMN quantitiesText TEXT NOT NULL DEFAULT ''")
+                }
+            })
             .build()
 
     @Provides
