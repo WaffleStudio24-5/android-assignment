@@ -1,0 +1,55 @@
+[
+  {
+    "id": 101,
+    "name": "든든한 한 끼",
+    "description": "버거와 감자튀김을 함께 즐겨 보세요.",
+    "items": [
+      {
+        "menuId": 1,
+        "quantity": 1
+      },
+      {
+        "menuId": 3,
+        "quantity": 2
+      }
+    ]
+  },
+  {
+    "id": 102,
+    "name": "가벼운 점심",
+    "description": "샐러드와 레몬에이드로 가볍게 즐겨요.",
+    "items": [
+      {
+        "menuId": 4,
+        "quantity": 1
+      },
+      {
+        "menuId": 5,
+        "quantity": 1
+      }
+    ]
+  },
+  {
+    "id": 103,
+    "name": "둘이 함께",
+    "description": "버거와 핫도그를 나누어 먹어요.",
+    "items": [
+      {
+        "menuId": 1,
+        "quantity": 1
+      },
+      {
+        "menuId": 2,
+        "quantity": 1
+      },
+      {
+        "menuId": 3,
+        "quantity": 1
+      },
+      {
+        "menuId": 6,
+        "quantity": 2
+      }
+    ]
+  }
+]
