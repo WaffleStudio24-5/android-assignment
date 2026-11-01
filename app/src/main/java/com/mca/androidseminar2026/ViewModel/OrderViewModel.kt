@@ -43,5 +43,8 @@ class OrderViewModel @Inject constructor() : ViewModel() {
 
     /** TODO: 장바구니에 사용자 설정 조합을 추가하는 함수 */
 
+    fun setSaveErrorMessage(message: String?) {
+        _uiState.update { it.copy(saveErrorMessage = message) }
+    }
 
 }
