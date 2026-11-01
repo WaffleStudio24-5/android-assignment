@@ -103,6 +103,8 @@ fun Assignment3Root() {
                 CombinationScreen(
                     state = combinations,
                     onBack = { navController.popBackStack() },
+                    onLoadToCart = orderViewModel::addCombinationQuantities,
+                    onDeleteCombination = combinationViewModel::deleteCombination,
                 )
             }
         }

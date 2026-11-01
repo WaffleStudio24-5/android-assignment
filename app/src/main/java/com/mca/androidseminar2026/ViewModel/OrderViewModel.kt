@@ -47,4 +47,17 @@ class OrderViewModel @Inject constructor() : ViewModel() {
         _uiState.update { it.copy(saveErrorMessage = message) }
     }
 
+    /** 장바구니에 사용자 설정 조합 수량을 더합니다. */
+    fun addCombinationQuantities(quantities: Map<Int, Int>) {
+        _uiState.update { current ->
+            val updated = current.quantities.toMutableMap()
+            quantities.forEach { (menuId, qty) ->
+                if (qty > 0) {
+                    val currentQty = updated[menuId] ?: 0
+                    updated[menuId] = currentQty + qty
+                }
+            }
+            current.copy(quantities = updated)
+        }
+    }
 }
