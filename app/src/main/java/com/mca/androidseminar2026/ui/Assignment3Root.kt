@@ -96,20 +96,41 @@ fun Assignment3Root() {
                     onShowSaveDialog = orderViewModel::showSaveDialog,
                 )
             }
+
             composable(Destination.COMBINATIONS) {
                 CombinationScreen(
                     state = combinations,
-                    onBack = { navController.popBackStack() },
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onAdd = { quantities ->
+                        orderViewModel.addCombination(quantities)
+                        navController.popBackStack()
+                    },
+                    onDelete = combinationViewModel::delete
                 )
             }
+
         }
+
         if (order.isSaveDialogOpen) {
             SaveCombinationDialog(
+                order = order,
                 errorMessage = order.saveErrorMessage,
+                isSaving = combinations.isSaving,
                 onDismiss = orderViewModel::hideSaveDialog,
                 onSave = { name ->
-                    // TODO: 조합 이름과 order.quantities를 저장하고 성공할 때만 Dialog를 닫으세요.
-                },
+                    combinationViewModel.save(
+                        name = name,
+                        quantities = order.quantities.toMap()
+                    ) { error ->
+                        if (error == null) {
+                            orderViewModel.hideSaveDialog()
+                        } else {
+                            orderViewModel.setSaveError(error)
+                        }
+                    }
+                }
             )
         }
     }
