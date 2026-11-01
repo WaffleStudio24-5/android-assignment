@@ -83,6 +83,7 @@ fun Assignment3Root() {
                     onCategorySelected = browseViewModel::selectCategory,
                     onIncrease = orderViewModel::increase,
                     onDecrease = orderViewModel::decrease,
+                    onShowBudgetDialog = orderViewModel::showBudgetDialog,
                 )
             }
             composable(Destination.CART) {
@@ -92,17 +93,22 @@ fun Assignment3Root() {
                     onDecrease = orderViewModel::decrease,
                     onClear = orderViewModel::clearCart,
                     onCheckout = {
-                        val price = NumberFormat.getNumberInstance(Locale.KOREA).format(order.totalPrice)
-                        Toast.makeText(context, "${price}원 결제 완료!", Toast.LENGTH_SHORT).show()
+                        orderViewModel.checkout { total ->
+                            val price = NumberFormat.getNumberInstance(Locale.KOREA).format(total)
+                            Toast.makeText(context, "${price}원 결제 완료!", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     onNavigateToCombinations = { navController.navigate(Destination.COMBINATIONS) },
                     onShowSaveDialog = orderViewModel::showSaveDialog,
+                    onShowBudgetDialog = orderViewModel::showBudgetDialog,
                 )
             }
             composable(Destination.COMBINATIONS) {
                 CombinationScreen(
                     state = combinations,
+                    budget = order.budget,
                     onBack = { navController.popBackStack() },
+                    onShowBudgetDialog = orderViewModel::showBudgetDialog,
                     onLoadToCart = orderViewModel::addCombinationQuantities,
                     onDeleteCombination = combinationViewModel::deleteCombination,
                 )
@@ -110,6 +116,8 @@ fun Assignment3Root() {
         }
         if (order.isSaveDialogOpen) {
             SaveCombinationDialog(
+                itemCount = order.cartItems.size,
+                totalQuantity = order.totalQuantity,
                 errorMessage = order.saveErrorMessage,
                 onDismiss = orderViewModel::hideSaveDialog,
                 onSave = { name ->
@@ -122,6 +130,14 @@ fun Assignment3Root() {
                         }
                     }
                 },
+            )
+        }
+        if (order.isBudgetDialogOpen) {
+            BudgetEditDialog(
+                currentBudget = order.budget,
+                currentCartTotal = order.totalPrice,
+                onDismiss = orderViewModel::hideBudgetDialog,
+                onSave = orderViewModel::updateBudget,
             )
         }
     }

@@ -1,19 +1,32 @@
 package com.mca.androidseminar2026.ViewModel
 
 import androidx.lifecycle.ViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
+import androidx.lifecycle.viewModelScope
 import com.mca.androidseminar2026.data.MenuData
+import com.mca.androidseminar2026.data.local.BudgetDataStore
 import com.mca.androidseminar2026.uistate.OrderUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-/** 제공 코드: 과제 2의 장바구니 동작을 담당합니다. */
+/** 장바구니 및 예산 관리를 담당하는 ViewModel */
 @HiltViewModel
-class OrderViewModel @Inject constructor() : ViewModel() {
+class OrderViewModel @Inject constructor(
+    private val budgetDataStore: BudgetDataStore
+) : ViewModel() {
     private val _uiState = MutableStateFlow(OrderUiState())
     val uiState = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            budgetDataStore.budgetFlow.collect { budget ->
+                _uiState.update { it.copy(budget = budget) }
+            }
+        }
+    }
 
     fun increase(menuId: Int) = changeQuantity(menuId, 1)
     fun decrease(menuId: Int) = changeQuantity(menuId, -1)
@@ -41,8 +54,6 @@ class OrderViewModel @Inject constructor() : ViewModel() {
         _uiState.update { it.copy(isSaveDialogOpen = false, saveErrorMessage = null) }
     }
 
-    /** TODO: 장바구니에 사용자 설정 조합을 추가하는 함수 */
-
     fun setSaveErrorMessage(message: String?) {
         _uiState.update { it.copy(saveErrorMessage = message) }
     }
@@ -58,6 +69,36 @@ class OrderViewModel @Inject constructor() : ViewModel() {
                 }
             }
             current.copy(quantities = updated)
+        }
+    }
+
+    /* --- 예산 관련 메서드 --- */
+
+    fun showBudgetDialog() {
+        _uiState.update { it.copy(isBudgetDialogOpen = true) }
+    }
+
+    fun hideBudgetDialog() {
+        _uiState.update { it.copy(isBudgetDialogOpen = false) }
+    }
+
+    fun updateBudget(amount: Int) {
+        viewModelScope.launch {
+            budgetDataStore.setBudget(amount)
+            hideBudgetDialog()
+        }
+    }
+
+    /** 주문 완료 시 현재 장바구니 합계를 예산 잔액에서 차감하고 장바구니를 비웁니다. */
+    fun checkout(onCheckoutSuccess: (Long) -> Unit) {
+        val currentTotal = _uiState.value.totalPrice
+        if (_uiState.value.totalQuantity == 0) return
+
+        viewModelScope.launch {
+            val newBudget = _uiState.value.budget - currentTotal.toInt()
+            budgetDataStore.setBudget(newBudget)
+            clearCart()
+            onCheckoutSuccess(currentTotal)
         }
     }
 }

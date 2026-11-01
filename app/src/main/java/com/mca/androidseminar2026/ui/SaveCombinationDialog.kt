@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,6 +23,8 @@ import androidx.compose.ui.unit.dp
 /** Dialog UI의 출발점. 입력 검증과 저장 결과 처리는 호출하는 쪽에서 완성하세요. */
 @Composable
 fun SaveCombinationDialog(
+    itemCount: Int,
+    totalQuantity: Int,
     errorMessage: String?,
     onDismiss: () -> Unit,
     onSave: (String) -> Unit,
@@ -45,41 +49,48 @@ fun SaveCombinationDialog(
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "현재 장바구니 구성을 저장할 이름을 입력하세요.",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = "메뉴 ${itemCount}종 · 총 ${totalQuantity}개를 저장합니다.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("조합 이름") },
-                    placeholder = { Text("예: 버거 세트 (1~20자)") },
+                    placeholder = { Text("예: 버거 세트") },
                     singleLine = true,
                     isError = errorMessage != null,
                     modifier = Modifier.fillMaxWidth()
                 )
+                Spacer(modifier = Modifier.height(8.dp))
                 if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = errorMessage,
                         color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                } else {
+                    Text(
+                        text = "공백을 제외하고 1~20자로 입력해 주세요.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = { onSave(name) }
             ) {
                 Text("저장")
             }
         },
         dismissButton = {
-            TextButton(
+            OutlinedButton(
                 onClick = onDismiss
             ) {
-                Text("취소")
+                Text("취소", color = MaterialTheme.colorScheme.onSurface)
             }
         }
     )
