@@ -2,6 +2,7 @@ package com.mca.androidseminar2026.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.mca.androidseminar2026.ViewModel.BrowseViewModel
 import com.mca.androidseminar2026.ViewModel.CombinationViewModel
 import com.mca.androidseminar2026.ViewModel.OrderViewModel
+import com.mca.androidseminar2026.ViewModel.BudgetViewModel
 import com.mca.androidseminar2026.model.OrderTab
 import java.text.NumberFormat
 import java.util.Locale
@@ -26,6 +28,7 @@ private object Destination {
     const val MENU = "menu"
     const val CART = "cart"
     const val COMBINATIONS = "combinations"
+    const val BUDGET = "budget"
 }
 
 private fun OrderTab.route(): String = when (this) {
@@ -34,16 +37,17 @@ private fun OrderTab.route(): String = when (this) {
     OrderTab.CART -> Destination.CART
 }
 
-/** Navigation 연결 예시. 화면 UI와 조합 동작은 각 화면에서 완성하세요. */
 @Composable
 fun Assignment3Root() {
     val navController = rememberNavController()
     val orderViewModel: OrderViewModel = hiltViewModel()
     val browseViewModel: BrowseViewModel = hiltViewModel()
     val combinationViewModel: CombinationViewModel = hiltViewModel()
+    val budgetViewModel: BudgetViewModel = hiltViewModel()
     val order by orderViewModel.uiState.collectAsStateWithLifecycle()
     val browse by browseViewModel.uiState.collectAsStateWithLifecycle()
     val combinations by combinationViewModel.uiState.collectAsStateWithLifecycle()
+    val budget by budgetViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -52,11 +56,16 @@ fun Assignment3Root() {
     Scaffold(
         bottomBar = {
             if (currentTab != null) {
-                BottomBar(currentTab, order.totalQuantity) { tab ->
-                    navController.navigate(tab.route()) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                Column {
+                    if (currentTab == OrderTab.MENU || currentTab == OrderTab.CART) {
+                        BudgetSummary(budget, order.totalPrice) { navController.navigate(Destination.BUDGET) { launchSingleTop = true } }
+                    }
+                    BottomBar(currentTab, order.totalQuantity) { tab ->
+                        navController.navigate(tab.route()) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 }
             }
@@ -100,15 +109,32 @@ fun Assignment3Root() {
                 CombinationScreen(
                     state = combinations,
                     onBack = { navController.popBackStack() },
+                    onAddToCart = { quantities ->
+                        orderViewModel.addCombination(quantities)
+                        Toast.makeText(context, "장바구니에 담았어요.", Toast.LENGTH_SHORT).show()
+                    },
+                    onDelete = combinationViewModel::delete,
+                    onRetry = combinationViewModel::observeCombinations,
+                )
+            }
+            composable(Destination.BUDGET) {
+                BudgetScreen(
+                    state = budget,
+                    onBack = { navController.popBackStack() },
+                    onSave = { budgetViewModel.save(it) { navController.popBackStack() } },
+                    onClear = { budgetViewModel.clear { navController.popBackStack() } },
+                    onRetry = budgetViewModel::observeBudget,
                 )
             }
         }
         if (order.isSaveDialogOpen) {
             SaveCombinationDialog(
+                order = order,
                 errorMessage = order.saveErrorMessage,
+                isSaving = combinations.isSaving,
                 onDismiss = orderViewModel::hideSaveDialog,
                 onSave = { name ->
-                    // TODO: 조합 이름과 order.quantities를 저장하고 성공할 때만 Dialog를 닫으세요.
+                    combinationViewModel.save(name, order.quantities, orderViewModel::onSaveResult)
                 },
             )
         }
