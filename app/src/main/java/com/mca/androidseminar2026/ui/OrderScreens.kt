@@ -63,6 +63,8 @@ fun MenuScreen(
     onIncrease: (Int) -> Unit,
     onDecrease: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    budget: Long? = null,
+    isBudgetLoading: Boolean = false,
 ) {
     var refreshing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -83,6 +85,11 @@ fun MenuScreen(
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(RestaurantData.name, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                     Text("오늘 먹고 싶은 메뉴를 골라 보세요.")
+                    BudgetStatus(
+                        amount = budget,
+                        totalPrice = order.totalPrice,
+                        isLoading = isBudgetLoading
+                    )
                     Row(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -121,13 +128,25 @@ fun CartScreen(
     modifier: Modifier = Modifier,
     onNavigateToCombinations: () -> Unit,
     onShowSaveDialog: () -> Unit,
-) {
+    budget: Long? = null,
+    isBudgetLoading: Boolean = false,
+    onOpenBudget: () -> Unit = {},
+    ) {
     Column(modifier.fillMaxSize()) {
         LazyColumn(Modifier.weight(1f)) {
             item {
                 Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("장바구니", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                     Text("담은 메뉴와 금액을 확인하세요.")
+                    BudgetStatus(
+                        amount = budget,
+                        totalPrice = order.totalPrice,
+                        isLoading = isBudgetLoading
+                    )
+
+                    OutlinedButton(onClick = onOpenBudget) {
+                        Text("예산 설정 / 수정")
+                    }
                     OutlinedButton(onClick = onClear, enabled = order.totalQuantity > 0) { Text("전체 비우기") }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = onShowSaveDialog, enabled = order.totalQuantity > 0) {
