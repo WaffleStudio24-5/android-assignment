@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -18,6 +19,7 @@ import com.mca.androidseminar2026.ViewModel.BrowseViewModel
 import com.mca.androidseminar2026.ViewModel.CombinationViewModel
 import com.mca.androidseminar2026.ViewModel.OrderViewModel
 import com.mca.androidseminar2026.model.OrderTab
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -48,6 +50,7 @@ fun Assignment3Root() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val currentTab = OrderTab.entries.firstOrNull { it.route() == currentRoute }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         bottomBar = {
@@ -80,6 +83,7 @@ fun Assignment3Root() {
                     onCategorySelected = browseViewModel::selectCategory,
                     onIncrease = orderViewModel::increase,
                     onDecrease = orderViewModel::decrease,
+                    onShowBudgetDialog = orderViewModel::showBudgetDialog,
                 )
             }
             composable(Destination.CART) {
@@ -89,27 +93,51 @@ fun Assignment3Root() {
                     onDecrease = orderViewModel::decrease,
                     onClear = orderViewModel::clearCart,
                     onCheckout = {
-                        val price = NumberFormat.getNumberInstance(Locale.KOREA).format(order.totalPrice)
-                        Toast.makeText(context, "${price}원 결제 완료!", Toast.LENGTH_SHORT).show()
+                        orderViewModel.checkout { total ->
+                            val price = NumberFormat.getNumberInstance(Locale.KOREA).format(total)
+                            Toast.makeText(context, "${price}원 결제 완료!", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     onNavigateToCombinations = { navController.navigate(Destination.COMBINATIONS) },
                     onShowSaveDialog = orderViewModel::showSaveDialog,
+                    onShowBudgetDialog = orderViewModel::showBudgetDialog,
                 )
             }
             composable(Destination.COMBINATIONS) {
                 CombinationScreen(
                     state = combinations,
+                    budget = order.budget,
                     onBack = { navController.popBackStack() },
+                    onShowBudgetDialog = orderViewModel::showBudgetDialog,
+                    onLoadToCart = orderViewModel::addCombinationQuantities,
+                    onDeleteCombination = combinationViewModel::deleteCombination,
                 )
             }
         }
         if (order.isSaveDialogOpen) {
             SaveCombinationDialog(
+                itemCount = order.cartItems.size,
+                totalQuantity = order.totalQuantity,
                 errorMessage = order.saveErrorMessage,
                 onDismiss = orderViewModel::hideSaveDialog,
                 onSave = { name ->
-                    // TODO: 조합 이름과 order.quantities를 저장하고 성공할 때만 Dialog를 닫으세요.
+                    scope.launch {
+                        val result = combinationViewModel.saveCombination(name, order.quantities)
+                        result.onSuccess {
+                            orderViewModel.hideSaveDialog()
+                        }.onFailure { error ->
+                            orderViewModel.setSaveErrorMessage(error.message ?: "저장에 실패했습니다.")
+                        }
+                    }
                 },
+            )
+        }
+        if (order.isBudgetDialogOpen) {
+            BudgetEditDialog(
+                currentBudget = order.budget,
+                currentCartTotal = order.totalPrice,
+                onDismiss = orderViewModel::hideBudgetDialog,
+                onSave = orderViewModel::updateBudget,
             )
         }
     }
