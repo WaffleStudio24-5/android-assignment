@@ -9,8 +9,8 @@ enum class RecommendationScenario {
 
 /** TODO: assignment4.md의 여섯 상황을 재현하세요. 실제 실패 시 자동 대체용이 아닙니다. */
 class FakeRecommendationRemoteDataSource @Inject constructor() : RecommendationRemoteDataSource {
-    // 이 값을 바꿔 검증할 상황을 선택할 수 있습니다.
-    private val scenario = RecommendationScenario.SUCCESS
+    // 테스트에서 인스턴스마다 검증할 상황을 선택할 수 있습니다.
+    var scenario = RecommendationScenario.SUCCESS
     private var requestCount = 0
 
     /** TODO: 1초 대기 후 시나리오와 요청 횟수에 맞는 결과를 반환하세요. */
