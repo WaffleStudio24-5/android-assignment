@@ -20,6 +20,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class BudgetPersistenceTest {
+    /** 입력 오류를 거부하고 저장한 예산이 DataStore 재생성 후에도 남는지 확인합니다. */
     @Test
     fun validatesInputAndPersistsBudget() = runBlocking {
         val context = InstrumentationRegistry.getInstrumentation().targetContext

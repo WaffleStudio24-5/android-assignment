@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/** 과제 3 완성 코드: 한 끼 기준 예산을 DataStore에 저장합니다. */
 @HiltViewModel
 class BudgetViewModel @Inject constructor(private val store: DataStore<Preferences>) : ViewModel() {
     private val budgetKey = longPreferencesKey("amount_won")
@@ -25,6 +26,7 @@ class BudgetViewModel @Inject constructor(private val store: DataStore<Preferenc
 
     init { observeBudget() }
 
+    /** 저장된 예산을 관찰하며 읽기 실패를 화면에 알립니다. */
     fun observeBudget() {
         observation?.cancel()
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -39,6 +41,7 @@ class BudgetViewModel @Inject constructor(private val store: DataStore<Preferenc
         }
     }
 
+    /** 원 단위 정수를 검증하고 저장이 끝난 뒤 화면을 닫습니다. */
     fun save(input: String, onSaved: () -> Unit) {
         val text = input.trim()
         val amount = text.toLongOrNull()
@@ -49,8 +52,10 @@ class BudgetViewModel @Inject constructor(private val store: DataStore<Preferenc
         writeBudget(amount, onSaved)
     }
 
+    /** 설정된 예산을 해제합니다. */
     fun clear(onSaved: () -> Unit) = writeBudget(null, onSaved)
 
+    /** 저장이 겹치지 않게 하고 실패하면 설정 화면을 유지합니다. */
     private fun writeBudget(amount: Long?, onSaved: () -> Unit) {
         if (_uiState.value.isSaving) return
         _uiState.update { it.copy(isSaving = true, errorMessage = null) }

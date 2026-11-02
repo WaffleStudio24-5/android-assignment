@@ -17,10 +17,12 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 
+/** 저장 중복·영속성·삭제와 기존 스키마 업그레이드를 확인합니다. */
 @RunWith(AndroidJUnit4::class)
 class Assignment3StorageTest {
     private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
 
+    /** 동시에 같은 이름을 저장해도 한 조합만 남습니다. */
     @Test
     fun duplicateSavesAreAtomic() = runBlocking {
         val db = Room.inMemoryDatabaseBuilder(context, CombinationDatabase::class.java).build()
@@ -36,6 +38,7 @@ class Assignment3StorageTest {
         } finally { db.close() }
     }
 
+    /** 재오픈해도 순서와 구성이 유지되고 선택한 조합만 삭제됩니다. */
     @Test
     fun combinationsSurviveReopenAndDeleteIndependently() = runBlocking {
         val name = "assignment3-test-${UUID.randomUUID()}.db"
@@ -59,6 +62,7 @@ class Assignment3StorageTest {
         }
     }
 
+    /** 과제 3 시작 DB를 파괴하지 않고 새 스키마로 이동합니다. */
     @Test
     fun migratesStarterDatabase() = runBlocking {
         val name = "assignment3-migration-${UUID.randomUUID()}.db"

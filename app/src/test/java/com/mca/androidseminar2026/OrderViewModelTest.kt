@@ -5,6 +5,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class OrderViewModelTest {
+    /** 기존 수량에 조합을 더하고 합계도 같은 상태에서 계산합니다. */
     @Test
     fun addingCombinationUpdatesQuantitiesAndPrice() {
         val vm = OrderViewModel()
@@ -16,6 +17,7 @@ class OrderViewModelTest {
         assertEquals(19_900L, vm.uiState.value.totalPrice)
     }
 
+    /** 저장 실패는 Dialog를 유지하고 성공할 때만 닫습니다. */
     @Test
     fun saveResultControlsDialogWithoutChangingCart() {
         val vm = OrderViewModel()

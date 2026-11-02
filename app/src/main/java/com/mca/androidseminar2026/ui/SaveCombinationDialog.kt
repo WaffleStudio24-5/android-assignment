@@ -25,6 +25,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.mca.androidseminar2026.uistate.OrderUiState
 
+/** 현재 장바구니의 조합 이름을 입력하고 저장 중에는 중복 조작을 막습니다. */
 @Composable
 fun SaveCombinationDialog(
     order: OrderUiState,

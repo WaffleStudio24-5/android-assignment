@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/** 과제 3 완성 코드: Room의 저장한 조합을 화면 상태로 전달합니다. */
 @HiltViewModel
 class CombinationViewModel @Inject constructor(
     private val dao: CombinationDao,
@@ -24,6 +25,7 @@ class CombinationViewModel @Inject constructor(
 
     init { observeCombinations() }
 
+    /** DB 변경을 관찰하며 읽기 실패 후에는 다시 구독할 수 있습니다. */
     fun observeCombinations() {
         observation?.cancel()
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -38,6 +40,7 @@ class CombinationViewModel @Inject constructor(
         }
     }
 
+    /** 이름을 검증하고 조합을 저장한 뒤 성공 또는 오류 문구를 돌려줍니다. */
     fun save(name: String, quantities: Map<Int, Int>, onResult: (String?) -> Unit) {
         if (_uiState.value.isSaving) return
         val trimmed = name.trim()
@@ -62,6 +65,7 @@ class CombinationViewModel @Inject constructor(
         }
     }
 
+    /** 선택한 조합을 삭제하고 실패 시 기존 목록과 오류 안내를 유지합니다. */
     fun delete(id: Long) {
         if (_uiState.value.deletingId != null) return
         _uiState.update { it.copy(deletingId = id, errorMessage = null) }

@@ -41,6 +41,7 @@ class OrderViewModel @Inject constructor() : ViewModel() {
         _uiState.update { it.copy(isSaveDialogOpen = false, saveErrorMessage = null) }
     }
 
+    /** 조합의 수량을 현재 장바구니에 더합니다. */
     fun addCombination(quantities: Map<Int, Int>) {
         _uiState.update { current ->
             current.copy(quantities = current.quantities.toMutableMap().apply {
@@ -49,6 +50,7 @@ class OrderViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    /** 저장에 성공하면 Dialog를 닫고 실패하면 입력과 오류를 남깁니다. */
     fun onSaveResult(error: String?) {
         _uiState.update { it.copy(isSaveDialogOpen = error != null, saveErrorMessage = error) }
     }
