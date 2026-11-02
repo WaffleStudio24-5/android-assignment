@@ -45,7 +45,7 @@ ui/Assignment4.kt                            # 읽기: 추천 화면과 기존 �
 
 데이터는 `assignment4-data` 브랜치에 게시되어 있습니다. [원격 추천 목록](https://raw.githubusercontent.com/WaffleStudio24-5/android-assignment/assignment4-data/data/assignment4/recommendations.json)을 열어 실제 응답을 확인할 수 있습니다.
 
-원본 데이터는 프로젝트 루트의 [data/assignment4/recommendations.json](data/assignment4/recommendations.json)에서도 확인할 수 있습니다. 실제 통신 구현에서는 이 로컬 파일이나 Kotlin 상수를 읽는 대신 **Retrofit으로 원격 주소에 GET 요청**을 보내세요.
+실제 통신 구현에서는 **Retrofit으로 위 원격 주소에 GET 요청**을 보내세요.
 
 응답은 다음 형태의 JSON 배열입니다.
 
