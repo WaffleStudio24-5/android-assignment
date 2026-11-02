@@ -111,6 +111,7 @@ fun MenuScreen(
     }
 }
 
+/** 장바구니와 조합 저장·추천 화면으로 가는 동작을 표시합니다. */
 @Composable
 fun CartScreen(
     order: OrderUiState,
@@ -121,6 +122,7 @@ fun CartScreen(
     modifier: Modifier = Modifier,
     onNavigateToCombinations: () -> Unit,
     onShowSaveDialog: () -> Unit,
+    onNavigateToRecommendations: (() -> Unit)? = null,
 ) {
     Column(modifier.fillMaxSize()) {
         LazyColumn(Modifier.weight(1f)) {
@@ -134,6 +136,9 @@ fun CartScreen(
                             Text("조합 저장")
                         }
                         OutlinedButton(onClick = onNavigateToCombinations) { Text("저장한 조합") }
+                    }
+                    if (onNavigateToRecommendations != null) {
+                        Button(onClick = onNavigateToRecommendations) { Text("추천 조합") }
                     }
                 }
             }

@@ -19,6 +19,7 @@ import com.mca.androidseminar2026.ViewModel.BrowseViewModel
 import com.mca.androidseminar2026.ViewModel.CombinationViewModel
 import com.mca.androidseminar2026.ViewModel.OrderViewModel
 import com.mca.androidseminar2026.ViewModel.BudgetViewModel
+import com.mca.androidseminar2026.ViewModel.RecommendationViewModel
 import com.mca.androidseminar2026.model.OrderTab
 import java.text.NumberFormat
 import java.util.Locale
@@ -29,16 +30,25 @@ private object Destination {
     const val CART = "cart"
     const val COMBINATIONS = "combinations"
     const val BUDGET = "budget"
+    const val RECOMMENDATIONS = "recommendations"
 }
 
+/** 바텀 바 항목을 Navigation 경로로 변환합니다. */
 private fun OrderTab.route(): String = when (this) {
     OrderTab.RESTAURANT -> Destination.RESTAURANT
     OrderTab.MENU -> Destination.MENU
     OrderTab.CART -> Destination.CART
 }
 
+/** 공통 화면과 추천 화면을 연결하며 답안에서는 추천 화면만 교체합니다. */
 @Composable
-fun Assignment3Root() {
+fun Assignment4(
+    recommendations: @Composable (onAddToCart: (Map<Int, Int>) -> Unit, onBack: () -> Unit) -> Unit = { onAddToCart, onBack ->
+        val viewModel: RecommendationViewModel = hiltViewModel()
+        val state by viewModel.uiState.collectAsStateWithLifecycle()
+        RecommendationScreen(state, viewModel::refresh, onAddToCart, onBack)
+    },
+) {
     val navController = rememberNavController()
     val orderViewModel: OrderViewModel = hiltViewModel()
     val browseViewModel: BrowseViewModel = hiltViewModel()
@@ -103,6 +113,9 @@ fun Assignment3Root() {
                     },
                     onNavigateToCombinations = { navController.navigate(Destination.COMBINATIONS) },
                     onShowSaveDialog = orderViewModel::showSaveDialog,
+                    onNavigateToRecommendations = {
+                        navController.navigate(Destination.RECOMMENDATIONS) { launchSingleTop = true }
+                    },
                 )
             }
             composable(Destination.COMBINATIONS) {
@@ -124,6 +137,15 @@ fun Assignment3Root() {
                     onSave = { budgetViewModel.save(it) { navController.popBackStack() } },
                     onClear = { budgetViewModel.clear { navController.popBackStack() } },
                     onRetry = budgetViewModel::observeBudget,
+                )
+            }
+            composable(Destination.RECOMMENDATIONS) {
+                recommendations(
+                    { quantities ->
+                        orderViewModel.addCombination(quantities)
+                        Toast.makeText(context, "장바구니에 담았어요.", Toast.LENGTH_SHORT).show()
+                    },
+                    { navController.popBackStack() },
                 )
             }
         }
