@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 private val Context.budgetDataStore by preferencesDataStore(name = "meal-budget")
 
-/** Room DB와 DAO를 Hilt로 제공합니다. */
+/** Room DB와 DAO를 Hilt로 제공 */
 @Module
 @InstallIn(SingletonComponent::class)
 object StorageModule {

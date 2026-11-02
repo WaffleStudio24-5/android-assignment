@@ -8,14 +8,14 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.mca.androidseminar2026.model.Combination
 
-/** 이름은 저장 전에 공백을 제거하며 DB에서도 중복을 방지합니다. */
+/** 이름은 저장 전에 공백을 제거하고, DB에서 중복을 방지합니다. */
 @Entity(tableName = "saved_combinations", indices = [Index(value = ["name"], unique = true)])
 data class CombinationEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
 )
 
-/** 조합을 삭제하면 구성 항목도 함께 삭제합니다. */
+/** 조합을 삭제하면 구성 항목도 함께 삭제 */
 @Entity(
     tableName = "combination_items",
     primaryKeys = ["combinationId", "menuId"],
@@ -27,7 +27,7 @@ data class CombinationEntity(
 )
 data class CombinationItemEntity(val combinationId: Long, val menuId: Int, val quantity: Int)
 
-/** 조합과 그 구성 항목을 한 번에 읽는 조회 결과입니다. */
+/** 조합과 그 구성 항목을 한 번에 읽는 조회 결과 */
 data class CombinationWithItems(
     @Embedded val combination: CombinationEntity,
     @Relation(parentColumn = "id", entityColumn = "combinationId")

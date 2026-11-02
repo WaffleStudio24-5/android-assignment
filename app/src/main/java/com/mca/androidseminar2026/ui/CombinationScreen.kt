@@ -26,7 +26,7 @@ import com.mca.androidseminar2026.data.MenuData
 import com.mca.androidseminar2026.uistate.CombinationUiState
 import com.mca.androidseminar2026.uistate.OrderUiState
 
-/** 저장한 조합의 구성·금액·담기와 삭제 확인을 표시합니다. */
+/** 저장한 조합의 구성·금액·담기와 삭제 확인 표시 */
 @Composable
 fun CombinationScreen(
     state: CombinationUiState,

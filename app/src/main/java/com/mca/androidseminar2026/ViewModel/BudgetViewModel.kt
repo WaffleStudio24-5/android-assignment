@@ -41,7 +41,7 @@ class BudgetViewModel @Inject constructor(private val store: DataStore<Preferenc
         }
     }
 
-    /** 원 단위 정수를 검증하고 저장이 끝난 뒤 화면을 닫습니다. */
+    /** 원 단위 정수인지 확인하고 저장이 끝난 뒤 화면을 닫습니다. */
     fun save(input: String, onSaved: () -> Unit) {
         val text = input.trim()
         val amount = text.toLongOrNull()

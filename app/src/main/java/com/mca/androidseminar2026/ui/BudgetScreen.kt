@@ -25,10 +25,9 @@ import com.mca.androidseminar2026.uistate.BudgetUiState
 import java.text.NumberFormat
 import java.util.Locale
 
-/** 금액을 읽기 쉬운 원 단위로 표시합니다. */
 fun formatWon(amount: Long): String = "${NumberFormat.getNumberInstance(Locale.KOREA).format(amount)}원"
 
-/** 메뉴와 장바구니에서 같은 기준으로 예산과 현재 금액을 비교합니다. */
+/** 메뉴와 장바구니에서 같은 기준으로 예산과 현재 금액을 비교 */
 @Composable
 fun BudgetSummary(state: BudgetUiState, totalPrice: Long, onEdit: () -> Unit) {
     Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp)) {
