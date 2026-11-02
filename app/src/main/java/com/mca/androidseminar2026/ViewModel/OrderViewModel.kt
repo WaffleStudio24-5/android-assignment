@@ -41,7 +41,7 @@ class OrderViewModel @Inject constructor() : ViewModel() {
         _uiState.update { it.copy(isSaveDialogOpen = false, saveErrorMessage = null) }
     }
 
-    /** 조합의 수량을 현재 장바구니에 더합니다. */
+    /** 조합의 수량을 장바구니에 더합니다. */
     fun addCombination(quantities: Map<Int, Int>) {
         _uiState.update { current ->
             current.copy(quantities = current.quantities.toMutableMap().apply {

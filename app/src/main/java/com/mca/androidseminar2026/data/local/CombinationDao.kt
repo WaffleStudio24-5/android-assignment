@@ -7,10 +7,10 @@ import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
-/** 조합 이름과 구성 항목을 원자적으로 저장하고 변경을 관찰합니다. */
+/** 조합 이름과 구성 항목을 원자적으로 저장하고 변경을 관찰하는 DAO입니다. */
 @Dao
 abstract class CombinationDao {
-    /** 나중에 저장한 조합부터 구성 항목과 함께 관찰합니다. */
+    /** 나중에 저장한 조합 순서로 관찰합니다. */
     @Transaction
     @Query("SELECT * FROM saved_combinations ORDER BY id DESC")
     abstract fun observeAll(): Flow<List<CombinationWithItems>>

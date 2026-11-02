@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-/** 과제 3의 저장한 조합 DB입니다. 추천 캐시와는 독립적으로 관리합니다. */
+/** 과제 3의 저장한 조합 DB입니다. */
 @Database(
     entities = [CombinationEntity::class, CombinationItemEntity::class],
     version = 2,
