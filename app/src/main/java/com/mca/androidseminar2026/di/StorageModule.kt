@@ -5,6 +5,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.mca.androidseminar2026.data.local.CombinationDao
 import com.mca.androidseminar2026.data.local.CombinationDatabase
+import com.mca.androidseminar2026.data.local.RecommendationCacheDao
+import com.mca.androidseminar2026.data.local.RecommendationCacheDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,6 +32,13 @@ object StorageModule {
     @Provides
     fun provideCombinationDao(database: CombinationDatabase): CombinationDao =
         database.combinationDao()
+
+    @Provides @Singleton
+    fun provideRecommendationDatabase(@ApplicationContext context: Context): RecommendationCacheDatabase =
+        Room.databaseBuilder(context, RecommendationCacheDatabase::class.java, "recommendation-cache.db").build()
+
+    @Provides
+    fun provideRecommendationDao(database: RecommendationCacheDatabase): RecommendationCacheDao = database.recommendationCacheDao()
 
     /** 앱에서 한 인스턴스의 예산 DataStore를 공유합니다. */
     @Provides

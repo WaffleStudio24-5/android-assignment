@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import okhttp3.OkHttpClient
+import android.util.Log
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -21,9 +22,17 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor { chain ->
-            // TODO: 요청 메서드·URL, 응답 코드·소요 시간(ms), 연결 실패 원인을 Logcat에 기록하세요.
-            // 실패 예외는 다시 전달하고 아래 헤더 추가 동작은 유지하세요. 본문을 읽을 필요는 없습니다.
-            chain.proceed(chain.request().newBuilder().header("X-Client", "Android").build())
+            val request = chain.request().newBuilder().header("X-Client", "Android").build()
+            val startedAt = System.nanoTime()
+            Log.d("RecommendationNetwork", "${request.method} ${request.url}")
+            try {
+                chain.proceed(request).also { response ->
+                    Log.d("RecommendationNetwork", "${response.code} ${((System.nanoTime() - startedAt) / 1_000_000)}ms")
+                }
+            } catch (e: Exception) {
+                Log.d("RecommendationNetwork", "실패 ${((System.nanoTime() - startedAt) / 1_000_000)}ms: ${e.message}")
+                throw e
+            }
         }
         .callTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
         .build()
