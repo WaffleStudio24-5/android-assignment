@@ -1,6 +1,6 @@
 package com.mca.androidseminar2026.di
 
-import com.mca.androidseminar2026.data.remote.FakeRecommendationRemoteDataSource
+import com.mca.androidseminar2026.data.remote.RetrofitRecommendationRemoteDataSource
 import com.mca.androidseminar2026.data.remote.RecommendationRemoteDataSource
 import dagger.Binds
 import dagger.Module
@@ -17,6 +17,6 @@ abstract class RecommendationDataSourceModule {
     @Singleton
     abstract fun bindRecommendationRemoteDataSource(
         // 실제 통신 확인 시 RetrofitRecommendationRemoteDataSource로 바꾸세요.
-        implementation: FakeRecommendationRemoteDataSource,
+        implementation: RetrofitRecommendationRemoteDataSource,
     ): RecommendationRemoteDataSource
 }
