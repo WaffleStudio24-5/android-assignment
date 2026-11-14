@@ -1,21 +1,48 @@
 package com.mca.androidseminar2026.data
 
+import com.mca.androidseminar2026.data.local.RecommendationDao
 import com.mca.androidseminar2026.data.remote.RecommendationRemoteDataSource
+import com.mca.androidseminar2026.model.RecommendedCombination
 import com.mca.androidseminar2026.model.RecommendationSnapshot
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
-/** TODO: 로컬 조회와 원격 갱신 규칙을 구현하고 로컬 DataSource를 주입받으세요. */
 class RecommendationRepository @Inject constructor(
     private val remote: RecommendationRemoteDataSource,
+    private val local: RecommendationDao,
 ) {
-    /** TODO: Room을 관찰하세요. null은 성공한 캐시가 아직 없다는 뜻입니다. */
+
     fun observeCache(): Flow<RecommendationSnapshot?> {
-        TODO("Room 조회를 연결하세요.")
+        return local.observeCache().map { cache ->
+            cache?.let {
+                RecommendationSnapshot(
+                    items = it.recommendations
+                        .sortedBy { entry -> entry.recommendation.position }
+                        .map { entry ->
+                            RecommendedCombination(
+                                id = entry.recommendation.id,
+                                name = entry.recommendation.name,
+                                description = entry.recommendation.description,
+                                quantities = entry.quantities
+                                    .sortedBy { quantity -> quantity.position }
+                                    .associate { quantity ->
+                                        quantity.menuId to quantity.quantity
+                                    }
+                            )
+                        },
+                    updatedAtEpochMillis = it.info.updatedAtEpochMillis
+                )
+            }
+        }
     }
 
-    /** TODO: 원격 목록을 받아 검증이 끝난 결과와 성공 시각을 함께 저장하세요. */
     suspend fun refresh() {
-        TODO("원격 갱신과 캐시 저장을 연결하세요.")
+        val recommendations = remote.getRecommendations()
+
+        local.replaceAll(
+            items = recommendations,
+            updatedAtEpochMillis = System.currentTimeMillis()
+        )
     }
 }
